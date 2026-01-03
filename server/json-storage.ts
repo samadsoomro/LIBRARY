@@ -21,6 +21,7 @@ interface StorageData {
   books: any[];
   students: any[];
   events: any[];
+  notifications: any[];
 }
 
 class JsonStorage {
@@ -36,7 +37,8 @@ class JsonStorage {
     rareBooks: [],
     books: [],
     students: [],
-    events: []
+    events: [],
+    notifications: []
   };
 
   async init() {
@@ -514,6 +516,26 @@ class JsonStorage {
 
   async deleteEvent(id: string) {
     this.data.events = (this.data.events || []).filter((e) => e.id !== id);
+    await this.save();
+  }
+
+  async getNotifications() {
+    return (this.data.notifications || []).sort((a: any, b: any) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  async createNotification(notification: any) {
+    const id = generateId();
+    const newNotification = { id, ...notification, createdAt: new Date().toISOString() };
+    if (!this.data.notifications) this.data.notifications = [];
+    this.data.notifications.push(newNotification);
+    await this.save();
+    return newNotification;
+  }
+
+  async deleteNotification(id: string) {
+    this.data.notifications = (this.data.notifications || []).filter((n) => n.id !== id);
     await this.save();
   }
 }

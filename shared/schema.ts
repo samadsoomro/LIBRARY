@@ -184,3 +184,16 @@ export const events = pgTable("events", {
 export const insertEventSchema = createInsertSchema(events).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type Event = typeof events.$inferSelect;
+
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title"),
+  message: text("message"),
+  image: text("image"),
+  type: text("type").notNull(), // 'text', 'image', 'both'
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;

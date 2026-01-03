@@ -1,22 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -559,11 +544,9 @@ const LibraryCards = () => {
             </div>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>All Applications ({filteredApplications.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card className="border-none shadow-none bg-transparent">
+            {/* Removed CardHeader to match cleaner layout */}
+            <CardContent className="p-0">
               {loading ? (
                 <div className="text-center py-8 text-muted-foreground">Loading...</div>
               ) : filteredApplications.length === 0 ? (
@@ -571,107 +554,127 @@ const LibraryCards = () => {
                   No applications found.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>S.No</TableHead>
-                        <TableHead>Library Card ID</TableHead>
-                        <TableHead>Student Name</TableHead>
-                        <TableHead>Father Name</TableHead>
-                        <TableHead>Date of Birth</TableHead>
-                        <TableHead>Email Address</TableHead>
-                        <TableHead>Phone Number</TableHead>
-                        <TableHead>Street Address</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredApplications.map((app, index) => (
-                        <TableRow key={app.id} data-testid={`row-application-${app.id}`}>
-                          <TableCell className="font-medium text-center">
-                            {index + 1}
-                          </TableCell>
-                          <TableCell className="font-mono text-sm text-primary font-medium">
-                            {app.cardNumber}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {app.firstName} {app.lastName}
-                          </TableCell>
-                          <TableCell>
-                            {app.fatherName || '-'}
-                          </TableCell>
-                          <TableCell>
-                            {app.dob ? new Date(app.dob).toLocaleDateString('en-GB') : '-'}
-                          </TableCell>
-                          <TableCell>
-                            {app.email || '-'}
-                          </TableCell>
-                          <TableCell>
-                            {app.phone || '-'}
-                          </TableCell>
-                          <TableCell className="text-sm">
-                            {app.addressStreet || '-'}
-                          </TableCell>
-                          <TableCell>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-muted/40 rounded-t-lg border-b text-xs font-bold text-muted-foreground uppercase tracking-wider hidden md:grid">
+                    <div className="col-span-4">Student Details</div>
+                    <div className="col-span-2">Card ID</div>
+                    <div className="col-span-3">Contact</div>
+                    <div className="col-span-2">Status</div>
+                    <div className="col-span-1 text-right">Actions</div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {filteredApplications.map((app, index) => (
+                      <div key={app.id} className="bg-white rounded-xl border shadow-sm group hover:shadow-md transition-all">
+                        {/* Main Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 items-center">
+                          {/* Student Details */}
+                          <div className="md:col-span-4 flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                              {app.firstName.charAt(0)}{app.lastName.charAt(0)}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-neutral-900 truncate">{app.firstName} {app.lastName}</div>
+                              <div className="text-xs text-muted-foreground font-medium truncate">
+                                {app.fatherName ? `S/O: ${app.fatherName}` : 'Father name not provided'}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card ID */}
+                          <div className="md:col-span-2 flex md:block items-center gap-2">
+                            <span className="text-xs font-bold text-muted-foreground md:hidden">Card ID:</span>
+                            <div>
+                              <div className="text-[10px] uppercase text-muted-foreground font-bold mb-1 hidden md:block">SN #{index + 1}</div>
+                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-mono">
+                                {app.cardNumber}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {/* Contact */}
+                          <div className="md:col-span-3">
+                            <div className="text-sm font-medium text-neutral-900 truncate" title={app.email}>{app.email || '-'}</div>
+                            <div className="text-xs text-muted-foreground">{app.phone || '-'}</div>
+                          </div>
+
+                          {/* Status */}
+                          <div className="md:col-span-2 flex items-center justify-between md:justify-start gap-4">
+                            <span className="text-xs font-bold text-muted-foreground md:hidden">Status:</span>
                             {app.status?.toLowerCase() === 'pending' ? (
-                              <div className="flex flex-col gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => updateStatus(app.id, 'approved')}
-                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                  data-testid={`button-approve-${app.id}`}
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-2" />
-                                  Approve
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => updateStatus(app.id, 'rejected')}
-                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  data-testid={`button-reject-${app.id}`}
-                                >
-                                  Reject
-                                </Button>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="animate-pulse">Pending</Badge>
+                                <div className="flex gap-1 ml-2">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-full"
+                                    onClick={() => updateStatus(app.id, 'approved')}
+                                    title="Approve"
+                                  >
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full"
+                                    onClick={() => updateStatus(app.id, 'rejected')}
+                                    title="Reject"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
                             ) : app.status?.toLowerCase() === 'approved' ? (
-                              <Badge className="bg-green-600 hover:bg-green-700">Approved</Badge>
-                            ) : app.status?.toLowerCase() === 'rejected' ? (
-                              <Badge variant="destructive">Rejected</Badge>
+                              <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">Approved</Badge>
                             ) : (
-                              <Badge variant="secondary">Pending</Badge>
+                              <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-100 border-0">Rejected</Badge>
                             )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => generatePDF(app)}
-                                title="Download PDF"
-                                data-testid={`button-download-${app.id}`}
-                              >
-                                <Download className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => deleteApplication(app.id)}
-                                className="text-destructive hover:text-destructive"
-                                title="Delete"
-                                data-testid={`button-delete-${app.id}`}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="md:col-span-1 flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => generatePDF(app)}
+                              className="h-8 w-8 text-neutral-400 hover:text-primary"
+                              title="Download PDF"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => deleteApplication(app.id)}
+                              className="h-8 w-8 text-neutral-400 hover:text-destructive"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {/* Address Row - 1*5 Box (Full Width) */}
+                        <div className="bg-white px-4 pb-4 pt-1">
+                          <div className="flex items-start gap-2 pt-3 border-t border-dashed border-neutral-300">
+                            <span className="text-sm font-bold text-neutral-900 whitespace-nowrap">Address :</span>
+                            <p className="text-sm text-neutral-600 font-medium leading-relaxed break-words w-full">
+                              {[app.addressStreet, app.addressCity, app.addressState, app.addressZip].filter(Boolean).length > 0 ? (
+                                <span>
+                                  {[app.addressStreet, app.addressCity, app.addressState].filter(Boolean).join(", ")}
+                                  {app.addressZip ? ` - ${app.addressZip}` : ''}
+                                </span>
+                              ) : (
+                                <span className="text-neutral-400 italic">----------------------------------------------------</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>

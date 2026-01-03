@@ -2,36 +2,36 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 import {
   users, profiles, contactMessages, bookBorrows, libraryCardApplications,
-  donations, students, nonStudents, userRoles,
+  donations, students, nonStudents, userRoles, notifications,
   InsertUser, InsertProfile, InsertContactMessage, InsertBookBorrow,
-  InsertLibraryCardApplication, InsertDonation, InsertStudent, InsertNonStudent, InsertUserRole,
-  User, Profile, ContactMessage, BookBorrow, LibraryCardApplication, Donation, Student, NonStudent, UserRole
+  InsertLibraryCardApplication, InsertDonation, InsertStudent, InsertNonStudent, InsertUserRole, InsertNotification,
+  User, Profile, ContactMessage, BookBorrow, LibraryCardApplication, Donation, Student, NonStudent, UserRole, Notification
 } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   getProfile(userId: string): Promise<Profile | undefined>;
   createProfile(profile: InsertProfile): Promise<Profile>;
   updateProfile(userId: string, profile: Partial<InsertProfile>): Promise<Profile | undefined>;
-  
+
   getUserRoles(userId: string): Promise<UserRole[]>;
   createUserRole(role: InsertUserRole): Promise<UserRole>;
   hasRole(userId: string, role: string): Promise<boolean>;
-  
+
   getContactMessages(): Promise<ContactMessage[]>;
   getContactMessage(id: string): Promise<ContactMessage | undefined>;
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   updateContactMessageSeen(id: string, isSeen: boolean): Promise<ContactMessage | undefined>;
   deleteContactMessage(id: string): Promise<void>;
-  
+
   getBookBorrows(): Promise<BookBorrow[]>;
   getBookBorrowsByUser(userId: string): Promise<BookBorrow[]>;
   createBookBorrow(borrow: InsertBookBorrow): Promise<BookBorrow>;
   updateBookBorrowStatus(id: string, status: string, returnDate?: Date): Promise<BookBorrow | undefined>;
-  
+
   getLibraryCardApplications(): Promise<LibraryCardApplication[]>;
   getLibraryCardApplication(id: string): Promise<LibraryCardApplication | undefined>;
   getLibraryCardApplicationsByUser(userId: string): Promise<LibraryCardApplication[]>;
@@ -39,18 +39,23 @@ export interface IStorage {
   updateLibraryCardApplicationStatus(id: string, status: string): Promise<LibraryCardApplication | undefined>;
   deleteLibraryCardApplication(id: string): Promise<void>;
   getLibraryCardByCardNumber(cardNumber: string): Promise<LibraryCardApplication | undefined>;
-  
+
   getDonations(): Promise<Donation[]>;
   createDonation(donation: InsertDonation): Promise<Donation>;
   deleteDonation(id: string): Promise<void>;
-  
+
   getStudents(): Promise<Student[]>;
   getStudent(userId: string): Promise<Student | undefined>;
   createStudent(student: InsertStudent): Promise<Student>;
-  
+
   getNonStudents(): Promise<NonStudent[]>;
   getNonStudent(userId: string): Promise<NonStudent | undefined>;
+  getNonStudent(userId: string): Promise<NonStudent | undefined>;
   createNonStudent(nonStudent: InsertNonStudent): Promise<NonStudent>;
+
+  getNotifications(): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  deleteNotification(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -159,7 +164,7 @@ export class DatabaseStorage implements IStorage {
     const studentId = `GCMN-${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
     const issueDate = new Date().toISOString().split('T')[0];
     const validThrough = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
+
     const [created] = await db.insert(libraryCardApplications).values({
       ...application,
       cardNumber,
@@ -245,6 +250,19 @@ export class DatabaseStorage implements IStorage {
   async createNonStudent(nonStudent: InsertNonStudent): Promise<NonStudent> {
     const [created] = await db.insert(nonStudents).values(nonStudent).returning();
     return created;
+  }
+
+  async getNotifications(): Promise<Notification[]> {
+    return db.select().from(notifications).orderBy(notifications.createdAt);
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [created] = await db.insert(notifications).values(notification).returning();
+    return created;
+  }
+
+  async deleteNotification(id: string): Promise<void> {
+    await db.delete(notifications).where(eq(notifications.id, id));
   }
 }
 

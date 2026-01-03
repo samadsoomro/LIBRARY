@@ -35,11 +35,6 @@ const Contact = () => {
     try {
       await apiRequest('POST', '/api/contact-messages', formData);
 
-      try {
-        await apiRequest('POST', '/api/send-contact-confirmation', formData);
-      } catch (emailError) {
-        console.error('Email error:', emailError);
-      }
 
       setShowSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });

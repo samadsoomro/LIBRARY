@@ -40,6 +40,7 @@ const Header: React.FC = () => {
     { path: '/rare-books', label: 'Rare Books' },
     { path: '/events', label: 'Events' },
     { path: '/library-card', label: 'Library Card' },
+    { path: '/notifications', label: 'Notifications' },
     { path: '/about', label: 'About' },
     { path: '/contact', label: 'Contact' },
   ];
@@ -48,11 +49,10 @@ const Header: React.FC = () => {
 
   return (
     <motion.header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-card/98 backdrop-blur-md shadow-[0_2px_8px_hsl(0_0%_0%/0.04)] border-b border-border' 
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled
+          ? 'bg-card/98 backdrop-blur-md shadow-[0_2px_8px_hsl(0_0%_0%/0.04)] border-b border-border'
           : 'bg-gradient-to-b from-card to-background border-b border-border/50'
-      }`}
+        }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
@@ -92,11 +92,10 @@ const Header: React.FC = () => {
               <li key={link.path}>
                 <Link
                   to={link.path}
-                  className={`relative font-medium transition-colors py-2 flex items-center gap-1 text-sm ${
-                    location.pathname === link.path
+                  className={`relative font-medium transition-colors py-2 flex items-center gap-1 text-sm ${location.pathname === link.path
                       ? 'text-primary'
                       : 'text-foreground hover:text-primary'
-                  }`}
+                    }`}
                 >
                   {link.label}
                   {location.pathname === link.path && (
@@ -108,7 +107,7 @@ const Header: React.FC = () => {
                 </Link>
               </li>
             ))}
-            
+
             {/* Admin Secret Menu (Desktop) */}
             {!isAdminRoute && isAdmin && (
               <li>
@@ -234,17 +233,16 @@ const Header: React.FC = () => {
                     <li key={link.path}>
                       <Link
                         to={link.path}
-                        className={`block px-4 py-3 rounded-lg transition-colors flex items-center gap-2 ${
-                          location.pathname === link.path
+                        className={`block px-4 py-3 rounded-lg transition-colors flex items-center gap-2 ${location.pathname === link.path
                             ? 'bg-primary text-primary-foreground'
                             : 'hover:bg-secondary'
-                        }`}
+                          }`}
                       >
                         {link.label}
                       </Link>
                     </li>
                   ))}
-                  
+
                   <li className="pt-4 border-t border-border">
                     {user ? (
                       <div className="space-y-2 px-4">

@@ -13,32 +13,7 @@
   "profiles": [],
   "contactMessages": [],
   "bookBorrows": [],
-  "libraryCardApplications": [
-    {
-      "id": "21e18a5a6c332cd5",
-      "userId": null,
-      "firstName": "Abdul",
-      "lastName": "Samad",
-      "fatherName": "MUNIR AHMED SOOMRO",
-      "dob": "2007-11-03",
-      "email": "samad.tab1@gmail.com",
-      "phone": "03322247950",
-      "field": "Computer Science",
-      "rollNo": "E-09",
-      "class": "Class 11",
-      "addressStreet": "House No.A-5, Secter 11-B, North Karachi",
-      "addressCity": "Karachi",
-      "addressState": "Sindh",
-      "addressZip": "75850",
-      "status": "approved",
-      "cardNumber": "CS-E-09-11",
-      "studentId": "GCMN-969194",
-      "issueDate": "2026-01-02",
-      "validThrough": "2027-01-02",
-      "createdAt": "2026-01-02T10:38:36.246Z",
-      "updatedAt": "2026-01-02T11:00:32.058Z"
-    }
-  ],
+  "libraryCardApplications": [],
   "donations": [],
   "userRoles": [],
   "notes": [],
@@ -71,5 +46,6 @@
       "phone": "03322247950",
       "createdAt": "2026-01-02T11:00:32.058Z"
     }
-  ]
+  ],
+  "notifications": []
 }

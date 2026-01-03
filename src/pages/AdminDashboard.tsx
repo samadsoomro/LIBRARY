@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, BookOpen, CreditCard, LogOut, Mail, Gift, Trash2, CheckCircle, Download, BarChart3, RefreshCw, FileText, Archive, Book, Eye, Shield, Calendar, ArrowRight, MoreVertical, Clock } from 'lucide-react';
+import { Users, BookOpen, CreditCard, LogOut, Mail, Gift, Trash2, CheckCircle, Download, BarChart3, RefreshCw, FileText, Archive, Book, Eye, Shield, Calendar, ArrowRight, MoreVertical, Clock, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 
 import Books from './admin/BooksDetails';
+import AdminNotifications from './admin/Notifications';
 
 const AdminDashboard: React.FC = () => {
   const [activeModule, setActiveModule] = useState('messages');
@@ -872,6 +873,7 @@ const AdminDashboard: React.FC = () => {
     { id: 'rare-books', label: 'Rare Books', icon: Archive, count: rareBooks?.length || 0 },
     { id: 'books-details', label: 'Books Details', icon: Book, count: booksDetails?.length || 0 },
     { id: 'events', label: 'Events', icon: Archive, count: events?.length || 0 },
+    { id: 'notifications', label: 'Notifications', icon: Bell, count: 0 },
   ];
 
   return (
@@ -1099,10 +1101,11 @@ const AdminDashboard: React.FC = () => {
                             <td className="py-5 px-6">
                               <div className="font-bold text-neutral-900">{book.borrowerName || '-'}</div>
                               <div className="text-xs text-neutral-500 font-medium">{book.borrowerEmail || '-'}</div>
+                              <div className="text-[10px] text-neutral-400 font-medium mt-0.5">{book.borrowerPhone || '-'}</div>
                             </td>
                             <td className="py-5 px-6">
                               <div className="text-[10px] font-black text-neutral-400 uppercase tracking-tighter mb-1">SN #{idx + 1}</div>
-                              <span className="bg-neutral-100 px-2 py-1 rounded text-[10px] font-black text-neutral-600">{book.combinedId || '-'}</span>
+                              <span className="bg-neutral-100 px-2 py-1 rounded text-[10px] font-black text-neutral-600">{book.libraryCardId || '-'}</span>
                             </td>
                             <td className="py-5 px-6">
                               <div className="font-black text-primary text-sm">{book.bookTitle}</div>
@@ -1258,10 +1261,10 @@ const AdminDashboard: React.FC = () => {
                             </td>
                             <td className="py-5 px-6">
                               <span className={`inline-flex items-center px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${card.status === 'approved'
-                                  ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200'
-                                  : card.status === 'rejected'
-                                    ? 'bg-rose-100 text-rose-700 ring-1 ring-rose-200'
-                                    : 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 animate-pulse'
+                                ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200'
+                                : card.status === 'rejected'
+                                  ? 'bg-rose-100 text-rose-700 ring-1 ring-rose-200'
+                                  : 'bg-amber-100 text-amber-700 ring-1 ring-amber-200 animate-pulse'
                                 }`}>
                                 {card.status || 'pending'}
                               </span>
@@ -1387,10 +1390,10 @@ const AdminDashboard: React.FC = () => {
                             </td>
                             <td className="py-5 px-6">
                               <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${user.type === 'admin'
-                                  ? 'bg-neutral-900 text-white'
-                                  : user.type === 'staff'
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-neutral-100 text-neutral-600'
+                                ? 'bg-neutral-900 text-white'
+                                : user.type === 'staff'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-neutral-100 text-neutral-600'
                                 }`}>
                                 {user.type || 'user'}
                               </span>
@@ -2085,6 +2088,9 @@ const AdminDashboard: React.FC = () => {
                 </div>
               )}
             </div>
+          )}
+          {activeModule === 'notifications' && (
+            <AdminNotifications />
           )}
         </motion.div>
       </main>

@@ -10,6 +10,26 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+// Helper to delete files from uploads directory
+const deleteFile = (relativePath: string | undefined | null) => {
+  if (!relativePath) return;
+
+  try {
+    // Remove leading slash if present to join correctly with process.cwd()
+    const cleanPath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+    const fullPath = path.join(process.cwd(), cleanPath);
+
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+      console.log(`[FILE DELETE] Successfully deleted: ${fullPath}`);
+    } else {
+      console.log(`[FILE DELETE] File not found: ${fullPath}`);
+    }
+  } catch (error: any) {
+    console.error(`[FILE DELETE] Error deleting file ${relativePath}:`, error.message);
+  }
+};
+
 const storage_config = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -24,7 +44,7 @@ const upload = multer({
   storage: storage_config,
   fileFilter: (req, file, cb) => {
     const allowedImageTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
-    if (file.fieldname === "bookImage" || file.fieldname === "eventImages" || file.fieldname === "coverImage") {
+    if (file.fieldname === "bookImage" || file.fieldname === "eventImages" || file.fieldname === "coverImage" || file.fieldname === "image") {
       if (allowedImageTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
@@ -589,6 +609,8 @@ export function registerRoutes(app: Express): void {
         field,
         rollNo,
         class: studentClass || studentClassAlt,
+        addressStreet,
+        addressCity,
         addressState,
         addressZip,
         password: applicationPassword ? await bcrypt.hash(applicationPassword, 10) : null,
@@ -745,6 +767,14 @@ export function registerRoutes(app: Express): void {
 
   app.delete("/api/admin/notes/:id", requireAdmin, async (req, res) => {
     try {
+      // Find the note first to get the PDF path
+      const notes = await storage.getNotes();
+      const note = notes.find((n: any) => n.id === req.params.id);
+
+      if (note && note.pdfPath) {
+        deleteFile(note.pdfPath);
+      }
+
       await storage.deleteNote(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
@@ -836,6 +866,13 @@ export function registerRoutes(app: Express): void {
 
   app.delete("/api/admin/rare-books/:id", requireAdmin, async (req, res) => {
     try {
+      const book = await storage.getRareBook(req.params.id);
+
+      if (book) {
+        if (book.pdfPath) deleteFile(book.pdfPath);
+        if (book.coverImage) deleteFile(book.coverImage);
+      }
+
       await storage.deleteRareBook(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
@@ -1004,6 +1041,12 @@ export function registerRoutes(app: Express): void {
 
   app.delete("/api/admin/books/:id", requireAdmin, async (req, res) => {
     try {
+      const book = await storage.getBook(req.params.id);
+
+      if (book && book.bookImage) {
+        deleteFile(book.bookImage);
+      }
+
       await storage.deleteBook(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
@@ -1091,7 +1134,68 @@ export function registerRoutes(app: Express): void {
 
   app.delete("/api/admin/events/:id", requireAdmin, async (req, res) => {
     try {
+      const events = await storage.getEvents();
+      const event = events.find((e: any) => e.id === req.params.id);
+
+      if (event && event.images && Array.isArray(event.images)) {
+        event.images.forEach((imagePath: string) => {
+          deleteFile(imagePath);
+        });
+      }
+
       await storage.deleteEvent(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  // Notifications Routes
+  app.get("/api/notifications", async (req, res) => {
+    try {
+      const notifications = await storage.getNotifications();
+      res.json(notifications);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/notifications", requireAdmin, upload.single('image'), async (req: MulterRequest, res) => {
+    try {
+      const { title, message, type } = req.body;
+      const file = req.file;
+
+      if (!type || !['text', 'image', 'both'].includes(type)) {
+        return res.status(400).json({ error: "Invalid notification type" });
+      }
+
+      let imagePath: string | undefined;
+
+      if (type === 'image' || type === 'both') {
+        if (!file) {
+          return res.status(400).json({ error: "Image is required" });
+        }
+        imagePath = `/server/uploads/${file.filename}`;
+      }
+
+      if ((type === 'text' || type === 'both') && !message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      const notification = await storage.createNotification({
+        title,
+        message,
+        image: imagePath,
+        type
+      });
+      res.json(notification);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/notifications/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteNotification(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
