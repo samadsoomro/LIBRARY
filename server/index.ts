@@ -85,20 +85,25 @@ app.use((req, res, next) => {
   const uploadDir = path.join(process.cwd(), "server", "uploads");
   app.use("/server/uploads", express.static(uploadDir));
 
-  if (app.get("env") === "development") {
+  if (process.env.NODE_ENV === "development" || process.env.VITE_DEV === "true") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  const port = 5000;
-  server.listen(
-    {
-      port,
-      host: "0.0.0.0",
-    },
-    () => {
-      log(`serving on port ${port}`);
-    }
-  );
+  // Only start server if not running as a Vercel function
+  if (process.env.VERCEL !== "1") {
+    const port = process.env.PORT || 5000;
+    server.listen(
+      {
+        port: Number(port),
+        host: "0.0.0.0",
+      },
+      () => {
+        log(`serving on port ${port}`);
+      }
+    );
+  }
 })();
+
+export default app;
