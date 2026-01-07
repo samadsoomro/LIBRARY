@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx server/index.ts",
     "build": "vite build",
+    "vercel-build": "vite build",
     "db:push": "drizzle-kit push",
     "lint": "eslint .",
     "preview": "vite preview"

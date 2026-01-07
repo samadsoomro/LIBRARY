@@ -3,7 +3,8 @@ import session from "express-session";
 import { createServer } from "http";
 import path from "path";
 import { registerRoutes } from "./routes.js";
-import { setupVite, serveStatic, log } from "./vite.js";
+// import { setupVite, serveStatic, log } from "./vite.js";
+import { log } from "./log.js";
 import { storage } from "./storage.js";
 import { fileURLToPath } from "url";
 
@@ -89,8 +90,10 @@ server.keepAliveTimeout = 65000;
 server.headersTimeout = 66000;
 
 if (process.env.NODE_ENV === "development" || process.env.VITE_DEV === "true") {
+  const { setupVite } = await import("./vite.js");
   await setupVite(app, server);
 } else {
+  const { serveStatic } = await import("./vite.js");
   serveStatic(app);
 }
 
