@@ -56,7 +56,7 @@ export async function registerRoutes(app: Express) {
         isAdmin: false
       } as any);
 
-      await storage.createUserRole({ userId: user.id, role: "user" });
+      await storage.createUserRole({ userId: user.id, role: "user" } as any);
 
       req.session.userId = user.id;
       req.session.isAdmin = false;

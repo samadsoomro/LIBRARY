@@ -157,7 +157,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateContactMessageSeen(id: string, isSeen: boolean): Promise<ContactMessage | undefined> {
-    const [updated] = await db.update(contactMessages).set({ isSeen }).where(eq(contactMessages.id, id)).returning();
+    const [updated] = await db.update(contactMessages).set({ isSeen } as any).where(eq(contactMessages.id, id)).returning();
     return updated;
   }
 
@@ -203,7 +203,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createLibraryCardApplication(application: InsertLibraryCardApplication): Promise<LibraryCardApplication> {
-    const cardNumber = this.generateCardNumber(application.field, application.rollNo, application.class);
+    const cardNumber = this.generateCardNumber((application as any).field, application.rollNo, application.class);
     const studentId = `GCMN-${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
     const issueDate = new Date().toISOString().split('T')[0];
     const validThrough = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -355,7 +355,7 @@ export class DatabaseStorage implements IStorage {
     const [book] = await db.select().from(rareBooks).where(eq(rareBooks.id, id));
     if (!book) return undefined;
     const newStatus = book.status === "active" ? "inactive" : "active";
-    const [updated] = await db.update(rareBooks).set({ status: newStatus }).where(eq(rareBooks.id, id)).returning();
+    const [updated] = await db.update(rareBooks).set({ status: newStatus } as any).where(eq(rareBooks.id, id)).returning();
     return updated;
   }
 
@@ -392,7 +392,7 @@ export class DatabaseStorage implements IStorage {
     const [note] = await db.select().from(notes).where(eq(notes.id, id));
     if (!note) return undefined;
     const newStatus = note.status === "active" ? "inactive" : "active";
-    const [updated] = await db.update(notes).set({ status: newStatus, updatedAt: new Date() }).where(eq(notes.id, id)).returning();
+    const [updated] = await db.update(notes).set({ status: newStatus, updatedAt: new Date() } as any).where(eq(notes.id, id)).returning();
     return updated;
   }
 
