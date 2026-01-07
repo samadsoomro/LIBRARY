@@ -52,9 +52,9 @@ export async function registerRoutes(app: Express) {
         rollNumber,
         department,
         studentClass,
-        type: studentClass ? "student" : "user",
+        type: (studentClass ? "student" : "user") as string,
         isAdmin: false
-      });
+      } as any);
 
       await storage.createUserRole({ userId: user.id, role: "user" });
 
