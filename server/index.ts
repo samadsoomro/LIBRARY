@@ -2,9 +2,13 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { createServer } from "http";
 import path from "path";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { storage } from "./json-storage";
+import { registerRoutes } from "./routes.js";
+import { setupVite, serveStatic, log } from "./vite.js";
+import { storage } from "./storage.js";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 declare module "express-session" {
   interface SessionData {
@@ -18,7 +22,8 @@ const app = express();
 app.use(express.json({ limit: '1024mb' }));
 app.use(express.urlencoded({ extended: false, limit: '1024mb' }));
 
-const MemoryStore = (await import("memorystore")).default(session);
+import MemoryStoreFactory from "memorystore";
+const MemoryStore = MemoryStoreFactory(session);
 
 app.use(
   session({
@@ -62,48 +67,45 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  // Initialize JSON storage
-  await storage.init();
-  
-  registerRoutes(app);
+// Serve static files from the uploads directory
+const uploadDir = path.join(process.cwd(), "server", "uploads");
+app.use("/server/uploads", express.static(uploadDir));
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+// Register routes synchronously
+registerRoutes(app);
 
-    res.status(status).json({ message });
-    throw err;
-  });
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
 
-  const server = createServer(app);
-  server.timeout = 600000;
-  server.keepAliveTimeout = 65000;
-  server.headersTimeout = 66000;
+  res.status(status).json({ message });
+  // Don't throw error here to avoid crashing in serverless environment
+  console.error(err);
+});
 
-  // Serve static files from the uploads directory
-  const uploadDir = path.join(process.cwd(), "server", "uploads");
-  app.use("/server/uploads", express.static(uploadDir));
+const server = createServer(app);
+server.timeout = 600000;
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
 
-  if (process.env.NODE_ENV === "development" || process.env.VITE_DEV === "true") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
+if (process.env.NODE_ENV === "development" || process.env.VITE_DEV === "true") {
+  await setupVite(app, server);
+} else {
+  serveStatic(app);
+}
 
-  // Only start server if not running as a Vercel function
-  if (process.env.VERCEL !== "1") {
-    const port = process.env.PORT || 5000;
-    server.listen(
-      {
-        port: Number(port),
-        host: "0.0.0.0",
-      },
-      () => {
-        log(`serving on port ${port}`);
-      }
-    );
-  }
-})();
+// Only start server if not running as a Vercel function
+if (process.env.VERCEL !== "1") {
+  const port = process.env.PORT || 5000;
+  server.listen(
+    {
+      port: Number(port),
+      host: "0.0.0.0",
+    },
+    () => {
+      log(`serving on port ${port}`);
+    }
+  );
+}
 
 export default app;
